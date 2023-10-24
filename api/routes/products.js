@@ -2,6 +2,33 @@ const express = require('express');
 const router=express.Router();
 const Product=require("../models/productModel");
 
+const multer = require('multer');
+
+const storage= multer.diskStorage({
+    destination:(req,file,cb)=>{
+        cb(null,'./uploads/');
+    },
+    filename:(req,file,cb)=>{
+        cb(null,new Date().toISOString()+file.filename);
+        
+    }
+})
+
+const fileFilter=(req,file,cb)=>{
+    //reject a file
+    if(file.mimetype==='image/jpeg'|| file.mimetype==='image/png'){
+    cb(null,true);
+
+    }else{
+        cb(null,false);
+
+    }
+}
+
+const upload=multer({storage:storage,limits:{
+    fileSize:1024*1024*5
+},
+    fileFilter:fileFilter})
 
 
 router.get('/',async(req,res,next)=>{
@@ -23,7 +50,7 @@ router.get('/',async(req,res,next)=>{
             })
         });
     }else{  
-    Product.find().select("name price _id").exec().then(docs=>{
+    Product.find().select("name price _id productImage").exec().then(docs=>{
         console.log(docs);
         const response={
             count:docs.length,
@@ -31,6 +58,7 @@ router.get('/',async(req,res,next)=>{
                 return{
                     name:doc.name,
                     price:doc.price,
+                    productImage:doc.productImage,
                     _id:doc._id,
                     request:{
                         type:"GET",
@@ -53,10 +81,12 @@ router.get('/',async(req,res,next)=>{
    
 
 
-router.post('/',(req,res,next)=>{
+router.post('/',upload.single('productImage'),(req,res,next)=>{
+   console.log(req.file);
     const product=new Product({
         name:req.body.name,
-        price:req.body.price
+        price:req.body.price,
+        productImage:req.file.path
     })
     product.save().then(doc=>{
         console.log(doc);
@@ -86,7 +116,6 @@ router.post('/',(req,res,next)=>{
 router.delete('/',async(req,res)=>{
     try{
         const id=req.query.id;
-        const product=await Product.find()
         await Product.findByIdAndRemove({_id:id});
         res.status(200).json({
             message:"product delete successfully",
