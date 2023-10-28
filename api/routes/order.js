@@ -2,11 +2,14 @@ const express = require('express');
 const router=express.Router();
 
 const Order=require("../models/orderModel")
-const Product=require("../models/productModel")
+const Product=require("../models/productModel");
+const checkAuth = require('../middleware/check-auth');
 
 
 
-router.get('/',async(req,res,next)=>{
+
+
+router.get('/',checkAuth,async(req,res,next)=>{
     
     try{
         const id=req.query.id;
@@ -58,7 +61,7 @@ router.get('/',async(req,res,next)=>{
     
 })
 
-router.post('/', async (req, res) => {
+router.post('/',checkAuth, async (req, res) => {
     try {
       const productData = await Product.findById(req.body.product);
   
@@ -95,7 +98,7 @@ router.post('/', async (req, res) => {
 
 
 
-  router.delete('/',async(req,res)=>{
+  router.delete('/',checkAuth,async(req,res)=>{
     const id=req.query.id;
     console.log(id);
     try{

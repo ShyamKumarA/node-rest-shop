@@ -3,13 +3,13 @@ const app=express();
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const morgan=require('morgan');
-
+const dotenv = require('dotenv').config();
 const productRoutes=require("./api/routes/products")
 const orderRoutes=require("./api/routes/order")
 const userRoutes=require("./api/routes/user")
 
 
-mongoose.connect("mongodb://127.0.0.1:27017/restapi").then(()=>{
+mongoose.connect(process.env.MONGODB_URL).then(()=>{
     console.log('connected...');
   }).catch((err)=>{
     console.log(err);

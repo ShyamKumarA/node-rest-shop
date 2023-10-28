@@ -1,15 +1,15 @@
 const express = require('express');
 const router=express.Router();
 const Product=require("../models/productModel");
-
 const multer = require('multer');
+const checkAuth=require("../middleware/check-auth")
 
 const storage= multer.diskStorage({
-    destination:(req,file,cb)=>{
+    destination:function(req,file,cb){
         cb(null,'./uploads/');
     },
-    filename:(req,file,cb)=>{
-        cb(null,new Date().toISOString()+file.filename);
+    filename:function(req,file,cb){
+        cb(null,new Date().toISOString()+file.originalname);
         
     }
 })
@@ -81,12 +81,12 @@ router.get('/',async(req,res,next)=>{
    
 
 
-router.post('/',upload.single('productImage'),(req,res,next)=>{
-   console.log(req.file);
+router.post('/',checkAuth,(req,res,next)=>{
+   //console.log(req.file);
     const product=new Product({
         name:req.body.name,
         price:req.body.price,
-        productImage:req.file.path
+        //productImage:req.file.path
     })
     product.save().then(doc=>{
         console.log(doc);
@@ -113,7 +113,7 @@ router.post('/',upload.single('productImage'),(req,res,next)=>{
 
 
     
-router.delete('/',async(req,res)=>{
+router.delete('/',checkAuth,async(req,res)=>{
     try{
         const id=req.query.id;
         await Product.findByIdAndRemove({_id:id});
@@ -137,7 +137,7 @@ router.delete('/',async(req,res)=>{
 
 })
 
-router.patch("/",async(req,res)=>{
+router.patch("/",checkAuth,async(req,res)=>{
     try{
         const id=req.query.id;
         const updateOps={}
